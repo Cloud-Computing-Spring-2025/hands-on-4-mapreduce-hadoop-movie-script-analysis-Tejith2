@@ -11,6 +11,11 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 public class MovieScriptAnalysis {
 
     public static void main(String[] args) throws Exception {
+        if (args.length < 2) {
+            System.err.println("Usage: MovieScriptAnalysis <input path> <output path>");
+            System.exit(-1);
+        }
+
         Configuration conf = new Configuration();
 
         // Task 1: Most Frequent Words by Character
@@ -44,6 +49,17 @@ public class MovieScriptAnalysis {
         job3.setOutputValueClass(Text.class);
         FileInputFormat.addInputPath(job3, new Path(args[1]));
         FileOutputFormat.setOutputPath(job3, new Path(args[2] + "/task3"));
-        System.exit(job3.waitForCompletion(true) ? 0 : 1);
+        job3.waitForCompletion(true);
+
+        // Task 4: Store Hadoop Counters as Output
+        Job job4 = Job.getInstance(conf, "Hadoop Counters");
+        job4.setJarByClass(MovieScriptAnalysis.class);
+        job4.setMapperClass(CounterMapper.class);
+        job4.setReducerClass(CounterReducer.class);
+        job4.setOutputKeyClass(Text.class);
+        job4.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job4, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job4, new Path(args[2] + "/task4"));
+        System.exit(job4.waitForCompletion(true) ? 0 : 1);
     }
 }
